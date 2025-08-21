@@ -2,14 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+/* Championship Draw Design System - Modern sports aesthetic with blue gradients
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 0 0% 98%;
+    --foreground: 215 25% 15%;
+    
+    /* Championship Blues */
+    --championship-primary: 214 84% 56%;
+    --championship-primary-light: 214 84% 70%;
+    --championship-primary-dark: 214 84% 45%;
+    --championship-secondary: 199 89% 48%;
+    --championship-accent: 187 85% 53%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(214 84% 56%), hsl(199 89% 48%));
+    --gradient-secondary: linear-gradient(45deg, hsl(199 89% 48%), hsl(187 85% 53%));
+    --gradient-subtle: linear-gradient(180deg, hsl(214 84% 70% / 0.1), hsl(199 89% 48% / 0.05));
+    
+    /* Shadows and Effects */
+    --shadow-championship: 0 10px 40px hsl(214 84% 56% / 0.15);
+    --shadow-card: 0 4px 20px hsl(214 84% 56% / 0.1);
+    --shadow-glow: 0 0 30px hsl(214 84% 56% / 0.3);
+    
+    /* Animations */
+    --transition-smooth: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    --transition-bounce: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
@@ -17,11 +38,11 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 214 84% 56%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 214 20% 96%;
+    --secondary-foreground: 215 25% 15%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
@@ -55,9 +76,14 @@ All colors MUST be HSL.
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
+  .championship-bg {
+    background: linear-gradient(135deg, hsl(214 84% 56%), hsl(199 89% 48%));
+    background-size: 100% 100%;
+  }
+
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 215 28% 8%;
+    --foreground: 0 0% 95%;
 
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
@@ -101,5 +127,45 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .championship-card {
+    @apply bg-white/95 backdrop-blur-sm border border-white/20 rounded-2xl p-6;
+    box-shadow: var(--shadow-card);
+    transition: var(--transition-smooth);
+  }
+  
+  .championship-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-championship);
+  }
+  
+  .championship-button {
+    @apply relative overflow-hidden rounded-xl px-6 py-3 text-white font-semibold;
+    background: var(--gradient-primary);
+    transition: var(--transition-smooth);
+  }
+  
+  .championship-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+  }
+  
+  .championship-button:active {
+    transform: translateY(0);
+  }
+  
+  .group-card {
+    @apply championship-card;
+    border-left: 4px solid hsl(var(--championship-primary));
+  }
+  
+  .admin-header {
+    background: var(--gradient-primary);
+    @apply text-white p-6 rounded-2xl mb-8;
+    box-shadow: var(--shadow-championship);
   }
 }
