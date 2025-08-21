@@ -4,8 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Edit2, Plus, Trophy, Users, Settings } from 'lucide-react';
+import { Trash2, Edit2, Plus, Trophy, Users, Settings, Play, Square, RotateCcw, Home, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 export interface Club {
   id: string;
@@ -23,6 +24,7 @@ export interface Tournament {
 }
 
 const AdminPanel = ({ onTournamentUpdate }: { onTournamentUpdate: (tournament: Tournament) => void }) => {
+  const navigate = useNavigate();
   const [tournament, setTournament] = useState<Tournament>({
     name: '',
     format: 'groups',
@@ -34,13 +36,20 @@ const AdminPanel = ({ onTournamentUpdate }: { onTournamentUpdate: (tournament: T
 
   const [newClub, setNewClub] = useState({ name: '', logo: '' });
   const [editingClub, setEditingClub] = useState<Club | null>(null);
+  const [drawStatus, setDrawStatus] = useState<'inactive' | 'active' | 'finished'>('inactive');
 
   useEffect(() => {
     const saved = localStorage.getItem('championship-tournament');
+    const savedStatus = localStorage.getItem('championship-draw-status');
+    
     if (saved) {
       const parsedTournament = JSON.parse(saved);
       setTournament(parsedTournament);
       onTournamentUpdate(parsedTournament);
+    }
+    
+    if (savedStatus) {
+      setDrawStatus(savedStatus as 'inactive' | 'active' | 'finished');
     }
   }, [onTournamentUpdate]);
 
@@ -135,6 +144,34 @@ const AdminPanel = ({ onTournamentUpdate }: { onTournamentUpdate: (tournament: T
     toast.success('Clube removido!');
   };
 
+  const startDraw = () => {
+    if (!tournament.name.trim()) {
+      toast.error('Nome do campeonato é obrigatório');
+      return;
+    }
+    if (tournament.clubs.length !== tournament.totalClubs) {
+      toast.error(`É necessário cadastrar exatamente ${tournament.totalClubs} clubes para iniciar o sorteio`);
+      return;
+    }
+    
+    setDrawStatus('active');
+    localStorage.setItem('championship-draw-status', 'active');
+    toast.success('Sorteio iniciado! Agora você pode ir para a tela pública.');
+  };
+
+  const finishDraw = () => {
+    setDrawStatus('finished');
+    localStorage.setItem('championship-draw-status', 'finished');
+    toast.success('Sorteio finalizado!');
+  };
+
+  const restartDraw = () => {
+    setDrawStatus('inactive');
+    localStorage.setItem('championship-draw-status', 'inactive');
+    localStorage.removeItem('championship-groups');
+    toast.success('Sorteio reiniciado!');
+  };
+
   return (
     <div className="min-h-screen p-6 relative overflow-hidden">
       {/* Background */}
@@ -149,13 +186,93 @@ const AdminPanel = ({ onTournamentUpdate }: { onTournamentUpdate: (tournament: T
       />
       
       <div className="relative z-10 max-w-6xl mx-auto">
-        {/* Header */}
+        {/* Navigation and Header */}
+        <div className="flex justify-between items-center mb-6">
+          <Button
+            onClick={() => navigate('/')}
+            variant="outline"
+            className="text-white border-white/20 hover:bg-white/10"
+          >
+            <Home className="h-4 w-4 mr-2" />
+            Página Inicial
+          </Button>
+          
+          <Button
+            onClick={() => navigate('/public')}
+            variant="outline"
+            className="text-white border-white/20 hover:bg-white/10"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Ver Sorteio Público
+          </Button>
+        </div>
+
         <div className="admin-header text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Trophy className="h-8 w-8" />
             <h1 className="text-3xl font-bold">Painel Administrativo</h1>
           </div>
           <p className="text-white/90">Configure seu campeonato e gerencie os clubes participantes</p>
+          
+          {/* Draw Control Buttons */}
+          <div className="flex justify-center gap-4 mt-6">
+            {drawStatus === 'inactive' && (
+              <Button
+                onClick={startDraw}
+                className="championship-button px-6"
+                disabled={tournament.clubs.length !== tournament.totalClubs || !tournament.name.trim()}
+              >
+                <Play className="h-4 w-4 mr-2" />
+                Iniciar Sorteio
+              </Button>
+            )}
+            
+            {drawStatus === 'active' && (
+              <div className="flex gap-4">
+                <Button
+                  onClick={finishDraw}
+                  className="championship-button px-6"
+                >
+                  <Square className="h-4 w-4 mr-2" />
+                  Finalizar Sorteio
+                </Button>
+                <Button
+                  onClick={restartDraw}
+                  variant="outline"
+                  className="text-white border-white/20 hover:bg-white/10 px-6"
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Reiniciar
+                </Button>
+              </div>
+            )}
+            
+            {drawStatus === 'finished' && (
+              <Button
+                onClick={restartDraw}
+                variant="outline"
+                className="text-white border-white/20 hover:bg-white/10 px-6"
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Reiniciar Sorteio
+              </Button>
+            )}
+          </div>
+          
+          {/* Status Indicator */}
+          <div className="mt-4">
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+              drawStatus === 'inactive' ? 'bg-gray-500/20 text-gray-300' :
+              drawStatus === 'active' ? 'bg-green-500/20 text-green-300' :
+              'bg-blue-500/20 text-blue-300'
+            }`}>
+              Status: {
+                drawStatus === 'inactive' ? 'Inativo' :
+                drawStatus === 'active' ? 'Em Andamento' :
+                'Finalizado'
+              }
+            </span>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
@@ -176,6 +293,7 @@ const AdminPanel = ({ onTournamentUpdate }: { onTournamentUpdate: (tournament: T
                   onChange={(e) => handleTournamentChange('name', e.target.value)}
                   placeholder="Ex: Copa do Mundo 2024"
                   className="mt-1"
+                  disabled={drawStatus !== 'inactive'}
                 />
               </div>
 
@@ -184,6 +302,7 @@ const AdminPanel = ({ onTournamentUpdate }: { onTournamentUpdate: (tournament: T
                 <Select
                   value={tournament.format}
                   onValueChange={(value) => handleTournamentChange('format', value)}
+                  disabled={drawStatus !== 'inactive'}
                 >
                   <SelectTrigger className="mt-1">
                     <SelectValue />
@@ -207,6 +326,7 @@ const AdminPanel = ({ onTournamentUpdate }: { onTournamentUpdate: (tournament: T
                         value={tournament.groups}
                         onChange={(e) => handleTournamentChange('groups', parseInt(e.target.value))}
                         className="mt-1"
+                        disabled={drawStatus !== 'inactive'}
                       />
                     </div>
                     <div>
@@ -218,6 +338,7 @@ const AdminPanel = ({ onTournamentUpdate }: { onTournamentUpdate: (tournament: T
                         value={tournament.clubsPerGroup}
                         onChange={(e) => handleTournamentChange('clubsPerGroup', parseInt(e.target.value))}
                         className="mt-1"
+                        disabled={drawStatus !== 'inactive'}
                       />
                     </div>
                   </div>
@@ -233,6 +354,7 @@ const AdminPanel = ({ onTournamentUpdate }: { onTournamentUpdate: (tournament: T
                   <Select
                     value={tournament.totalClubs.toString()}
                     onValueChange={(value) => handleTournamentChange('totalClubs', parseInt(value))}
+                    disabled={drawStatus !== 'inactive'}
                   >
                     <SelectTrigger className="mt-1">
                       <SelectValue />
@@ -269,6 +391,7 @@ const AdminPanel = ({ onTournamentUpdate }: { onTournamentUpdate: (tournament: T
                     }
                     placeholder="Nome do clube"
                     className="mt-1"
+                    disabled={drawStatus === 'active'}
                   />
                 </div>
                 <div>
@@ -278,16 +401,23 @@ const AdminPanel = ({ onTournamentUpdate }: { onTournamentUpdate: (tournament: T
                     accept="image/*"
                     onChange={handleLogoUpload}
                     className="mt-1 block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-championship-primary file:text-white hover:file:bg-championship-primary-dark"
+                    disabled={drawStatus === 'active'}
                   />
                 </div>
                 <Button
                   onClick={editingClub ? updateClub : addClub}
                   className="championship-button w-full"
-                  disabled={tournament.clubs.length >= tournament.totalClubs && !editingClub}
+                  disabled={(tournament.clubs.length >= tournament.totalClubs && !editingClub) || drawStatus === 'active'}
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   {editingClub ? 'Atualizar' : 'Adicionar'} Clube
                 </Button>
+                
+                {drawStatus === 'active' && (
+                  <p className="text-sm text-yellow-300 text-center">
+                    ⚠️ Sorteio em andamento - Edição de clubes bloqueada
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -318,6 +448,7 @@ const AdminPanel = ({ onTournamentUpdate }: { onTournamentUpdate: (tournament: T
                           size="sm"
                           onClick={() => setEditingClub(club)}
                           className="h-8 w-8 p-0"
+                          disabled={drawStatus === 'active'}
                         >
                           <Edit2 className="h-4 w-4" />
                         </Button>
@@ -326,6 +457,7 @@ const AdminPanel = ({ onTournamentUpdate }: { onTournamentUpdate: (tournament: T
                           size="sm"
                           onClick={() => removeClub(club.id)}
                           className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                          disabled={drawStatus === 'active'}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
