@@ -1,22 +1,12 @@
-# Welcome to your Lovable project
+# Draw Champ - Sistema de Sorteio Online
 
-## Project info
+## Sobre o Projeto
 
-**URL**: https://lovable.dev/projects/d19c549f-f0b9-4db5-86ed-05fc4a6809d3
+Draw Champ é uma aplicação web para realizar sorteios online de forma simples e transparente.
 
-## How can I edit this code?
+## Desenvolvimento Local
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/d19c549f-f0b9-4db5-86ed-05fc4a6809d3) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Para trabalhar com este projeto localmente:
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 

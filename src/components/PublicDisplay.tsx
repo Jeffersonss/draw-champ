@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Trophy, Users } from 'lucide-react';
+import { Home, Trophy, Users } from 'lucide-react';
 import { Tournament, Club } from './AdminPanel';
 import { gsap } from 'gsap';
+import { Button } from './ui/button';
 
 interface PublicDisplayProps {
   tournament: Tournament;
@@ -24,13 +25,15 @@ const PublicDisplay = ({ tournament, onClubSelect }: PublicDisplayProps) => {
   const clubNameRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Initialize draw positions based on tournament format
+    // Initialize draw positions based on tournament format and assigned positions
     const positions: DrawPosition[] = [];
     
     if (tournament.format === 'groups') {
       for (let g = 1; g <= (tournament.groups || 4); g++) {
         for (let s = 1; s <= (tournament.clubsPerGroup || 4); s++) {
-          positions.push({ group: g, slot: s });
+          // Procurar clube que está nesta posição
+          const assignedClub = tournament.clubs.find(club => club.group === g && club.position === s);
+          positions.push({ group: g, slot: s, club: assignedClub });
         }
       }
     } else {
@@ -39,12 +42,13 @@ const PublicDisplay = ({ tournament, onClubSelect }: PublicDisplayProps) => {
       const rounds = Math.log2(totalClubs);
       
       for (let i = 1; i <= totalClubs; i++) {
-        positions.push({ group: 1, slot: i }); // All in one "group" for knockout
+        const assignedClub = tournament.clubs.find(club => club.group === 1 && club.position === i);
+        positions.push({ group: 1, slot: i, club: assignedClub }); // All in one "group" for knockout
       }
     }
     
     setDrawPositions(positions);
-  }, [tournament]);
+  }, [tournament]); // Atualizar quando o tournament mudar
 
   useEffect(() => {
     // Animate cards entrance with stagger
@@ -185,14 +189,15 @@ const PublicDisplay = ({ tournament, onClubSelect }: PublicDisplayProps) => {
       <div 
         className="fixed inset-0 z-0"
         style={{
-          backgroundImage: `url('/lovable-uploads/38f26f6c-b0b7-42ef-a08f-ea5521a8588f.png')`,
+          backgroundImage: `url('/backgrounds/background.webp')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed'
         }}
       />
-
+  
       <div className="relative z-10 p-6">
+  
         {/* Header */}
         <div className="text-center mb-8 championship-card mx-auto max-w-4xl">
           <div className="flex items-center justify-center gap-3 mb-4">
@@ -216,45 +221,37 @@ const PublicDisplay = ({ tournament, onClubSelect }: PublicDisplayProps) => {
         </div>
 
         {/* Groups/Brackets */}
-        <div className="grid gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {Object.entries(groupedPositions).map(([groupNum, positions]) => (
             <div 
               key={groupNum}
               ref={el => { if (el) cardsRef.current[parseInt(groupNum)] = el; }}
-              className={`championship-card ${getGroupColor(parseInt(groupNum))}`}
+              className={`championship-card ${getGroupColor(parseInt(groupNum))} flex flex-col`}
             >
-              <div className="mb-4">
+              <div className="mb-4 text-center">
                 <h2 className="text-xl font-bold text-championship-primary">
                   {getGroupTitle(parseInt(groupNum))}
                 </h2>
               </div>
               
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="flex-grow grid grid-cols-1 gap-2">
                 {positions.map((position, index) => (
                   <div 
                     key={`${position.group}-${position.slot}`}
-                    className="p-4 bg-white/50 rounded-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:bg-white/70"
+                    className="p-2 bg-white/50 rounded-xl border border-white/20 backdrop-blur-sm transition-all duration-300 hover:bg-white/70 flex items-center justify-center text-center"
                   >
                     {position.club ? (
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
                         <img
                           src={position.club.logo}
                           alt={position.club.name}
-                          className="w-10 h-10 rounded-full object-cover"
+                          className="w-6 h-6 rounded-full object-cover"
                         />
-                        <div>
-                          <h3 className="font-semibold text-gray-800">{position.club.name}</h3>
-                          <p className="text-sm text-gray-600">Posição {position.slot}</p>
-                        </div>
+                        <span className="font-semibold text-gray-800 text-sm">{position.club.name}</span>
                       </div>
                     ) : (
-                      <div className="flex items-center justify-center h-16 text-gray-400">
-                        <div className="text-center">
-                          <div className="w-10 h-10 bg-gray-200 rounded-full mx-auto mb-2 flex items-center justify-center">
-                            <Users className="h-5 w-5" />
-                          </div>
-                          <p className="text-sm">Aguardando sorteio</p>
-                        </div>
+                      <div className="text-gray-400 text-sm">
+                        Aguardando...
                       </div>
                     )}
                   </div>

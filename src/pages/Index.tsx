@@ -8,7 +8,7 @@ const Index = () => {
       <div 
         className="fixed inset-0 z-0"
         style={{
-          backgroundImage: `url('/lovable-uploads/38f26f6c-b0b7-42ef-a08f-ea5521a8588f.png')`,
+          backgroundImage: `url('/backgrounds/background.webp')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed'
